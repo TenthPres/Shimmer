@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/tenth-shimmer.iml" filepath="$PROJECT_DIR$/.idea/tenth-shimmer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/shimmer.iml" filepath="$PROJECT_DIR$/.idea/shimmer.iml" />
     </modules>
   </component>
 </project>
