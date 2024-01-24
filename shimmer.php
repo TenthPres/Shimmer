@@ -8,6 +8,7 @@ Version: 1.0
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
+GitHub Plugin URI: https://github.com/TenthPres/Shimmer
 */
 
 function tenth_involvementClasses()
