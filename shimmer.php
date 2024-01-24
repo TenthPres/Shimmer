@@ -29,9 +29,6 @@ function tenth_setTribeSeriesSlug($args) : array
 function tenth_filterInvolvementActions($existing, $invObj = null)
 {
     global $post;
-    if ($post->post_name === "woodbury") {
-        return "";
-    }
 
     return $existing;
 }
@@ -288,8 +285,7 @@ function tenth_getProfilePhoto($url, $userId, $args = []): ?string {
             return null;
         }
 
-        $dir = substr(__DIR__, 0, -8) . "content";
-
+        $dir = WP_CONTENT_DIR;
         $name = str_ireplace(" ", "", $person->display_name);
 
         if (file_exists($dir . '/themes/firmament-child/people/' . $name . '.jpg')) {
@@ -345,11 +341,6 @@ add_filter('locale', 'tenth_setLocale');
 // Add Twitter links for those who have them, and email addresses for staff members
 function tenth_personActions($content, $person, $context): string
 {
-    /** @var \tp\TouchPointWP\Person $person */
-    if ($person->peopleId === 7581) { // Susan Elzey
-        return "";
-    }
-
     $preContent = "";
     $postContent = "";
     if ($person->ExtraValues()->TwitterHandle) {
