@@ -30,6 +30,8 @@ class SessionMatters {
                 'show_in_rest'      => false,
                 'supports'          => [
                     'title',
+                    'editor',
+                    'revisions',
                     'custom-fields',
 //                    'thumbnail'
                 ],

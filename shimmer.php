@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: Tenth Shimmer
+Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
 Version: 1.0
