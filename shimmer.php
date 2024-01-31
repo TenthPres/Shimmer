@@ -11,6 +11,10 @@ License: MIT
 GitHub Plugin URI: https://github.com/TenthPres/Shimmer
 */
 
+use tp\Shimmer\SessionMatters;
+
+require_once __DIR__ . "/shimmer/SessionMatters.php";
+
 function tenth_involvementClasses()
 {
     \tp\TouchPointWP\Involvement::$containerClass = "inv-list involvement-list";
@@ -383,3 +387,4 @@ function tenth_allowContact($value): string
 }
 add_filter('tp_allow_contact', 'tenth_allowContact');
 
+SessionMatters::load();
