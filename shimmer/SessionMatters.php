@@ -31,11 +31,12 @@ class SessionMatters {
                 'supports'          => [
                     'title',
                     'editor',
+//                    'author',
                     'revisions',
                     'custom-fields',
 //                    'thumbnail'
                 ],
-                'has_archive'       => true,
+                'has_archive'       => false,
                 'rewrite'           => [
                     'slug'       => "session",
                     'with_front' => false,
