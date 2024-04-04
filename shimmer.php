@@ -387,4 +387,18 @@ function tenth_allowContact($value): string
 }
 add_filter('tp_allow_contact', 'tenth_allowContact');
 
+
+/**
+ * Remove :00 from time strings that have it.
+ *
+ * @param $string
+ * @param $t
+ * @return string
+ */
+function tenth_formatTimeString($string, $t): string
+{
+    return str_replace($string, ":00", "");
+}
+add_filter('tp_adjust_time_string', 'tenth_formatTimeString');
+
 SessionMatters::load();
