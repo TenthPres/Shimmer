@@ -12,6 +12,7 @@ GitHub Plugin URI: https://github.com/TenthPres/Shimmer
 */
 
 use tp\Shimmer\SessionMatters;
+use tp\TouchPointWP\TouchPointWP;
 
 require_once __DIR__ . "/shimmer/SessionMatters.php";
 
@@ -371,11 +372,11 @@ function tenth_allowContact($value): string
     }
 
     // Prevent public caching, unfortunately.
-    \tp\TouchPointWP\TouchPointWP::doCacheHeaders(\tp\TouchPointWP\TouchPointWP::CACHE_PRIVATE);
+    TouchPointWP::doCacheHeaders(TouchPointWP::CACHE_PRIVATE);
     $country = $_SERVER['HTTP_CF-IPCountry'] ?? null;
 
     if ($country === null) {
-        $geoObj = \tp\TouchPointWP\TouchPointWP::instance()->geolocate(true, true);
+        $geoObj = TouchPointWP::instance()->geolocate(true, true);
         $country = $geoObj->raw->country_code ?? "";
     }
 
@@ -411,12 +412,11 @@ SessionMatters::load();
  * @return array|mixed
  */
 function tenth_allowFileUploadTypes($file_types){
-    if (\tp\TouchPointWP\TouchPointWP::currentUserIsAdmin()) {
-
+    if (TouchPointWP::currentUserIsAdmin()) {
         $new_filetypes = [];
         $new_filetypes['svg'] = 'image/svg+xml';
         return array_merge($file_types, $new_filetypes);
     }
     return $file_types;
 }
-add_filter('upload_mimes', 'add_file_types_to_uploads');
+add_filter('upload_mimes', 'tenth_allowFileUploadTypes');
