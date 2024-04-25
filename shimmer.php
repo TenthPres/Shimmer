@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0
+Version: 1.0.2
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
@@ -402,3 +402,21 @@ function tenth_formatTimeString($string, $t): string
 add_filter('tp_adjust_time_string', 'tenth_formatTimeString');
 
 SessionMatters::load();
+
+
+/**
+ * Allow admins to upload SVGs.
+ *
+ * @param $file_types
+ * @return array|mixed
+ */
+function tenth_allowFileUploadTypes($file_types){
+    if (\tp\TouchPointWP\TouchPointWP::currentUserIsAdmin()) {
+
+        $new_filetypes = [];
+        $new_filetypes['svg'] = 'image/svg+xml';
+        return array_merge($file_types, $new_filetypes);
+    }
+    return $file_types;
+}
+add_filter('upload_mimes', 'add_file_types_to_uploads');
