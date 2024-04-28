@@ -398,7 +398,7 @@ add_filter('tp_allow_contact', 'tenth_allowContact');
  */
 function tenth_formatTimeString($string, $t = null): string
 {
-    return str_replace($string, ":00", "");
+    return str_replace(":00", "", $string);
 }
 add_filter('tp_adjust_time_string', 'tenth_formatTimeString');
 
