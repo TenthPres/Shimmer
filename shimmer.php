@@ -234,45 +234,36 @@ function tenth_event_rest_data( $data, $event )
         $data['slide'] = null;
     }
 
+    $shortUrl = getShortUrlForLongUrl($data['url']);
+    $data['short_url'] = $shortUrl ?? "";
+
+    return $data;
+}
+add_filter( 'tribe_rest_event_data', 'tenth_event_rest_data', 10, 2 );
+
+
+function tenth_event_tp_data( $data ) {
+    $shortUrl = getShortUrlForLongUrl($data['url']);
+    $data['short_url'] = $shortUrl ?? "";
+
+    return $data;
+}
+add_filter('digsig_tpwp_event_data', 'tenth_event_tp_data', 10, 1);
+
+
+function getShortUrlForLongUrl($longPath) {
     global $wpdb;
     $tableName = $wpdb->base_prefix . "redirection_items";
-
-    $longPath = str_replace([site_url(), 'https://', 'http://'], "", $data['url']);
-
-    $data['short_url'] = "";
+    $longPath = str_replace([site_url(), 'https://', 'http://'], "", $longPath);
 
     $q = $wpdb->prepare("SELECT * FROM $tableName as ri WHERE ri.action_data LIKE %s AND ri.status = 'enabled'", $wpdb->esc_like($longPath) . '%');
     $q = str_replace("**", "%", $q);
     $redir = $wpdb->get_row($q);
     if ($redir) {
-        $data['short_url'] = "tenth.org" . $redir->url;
+        return "tenth.org" . $redir->url;
     }
-
-    return $data;
+    return null;
 }
-
-/**
- * @param $event
- *
- * @return array
- */
-//public function tenth_event_rest_properties( $event )
-//{
-//    $event = tribe_get_event( $event );
-//
-//    if ( ! $event ) {
-//        return [];
-//    }
-//
-//    $meta_virtual = [
-//        'is_virtual'           => $event->virtual,
-//        'virtual_url'          => $event->virtual_url,
-//        'virtual_video_source' => $event->virtual_video_source,
-//    ];
-//
-//    return $meta_virtual;
-//}
-add_filter( 'tribe_rest_event_data', 'tenth_event_rest_data', 10, 2 );
 
 
 /**
