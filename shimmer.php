@@ -296,6 +296,24 @@ function tenth_getProfilePhoto($url, $userId, $args = []): ?string {
 add_filter('get_avatar_url', 'tenth_getProfilePhoto', 100, 3);
 
 
+function firmament_unenqueuer () {
+//    wp_dequeue_style( 'wp-block-library' );
+//    wp_dequeue_style( 'swp-live-search-client' );
+//    wp_dequeue_style( 'ct_public_functions' );
+//    wp_dequeue_style( 'mere-resourcelibrary' );
+    wp_dequeue_style( 'videojs' );
+//    wp_dequeue_style( 'wpml-browser-redirect' );
+//
+//
+//    print "<!-- HERE \n";
+//    global $wp_scripts;
+//    print_r($wp_scripts->queue);
+//    print "\n-->";
+//
+//}
+add_action( 'wp_enqueue_scripts', 'firmament_unenqueuer', 20 );
+
+
 function remove_problematic_link_action() {
     remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
 }
