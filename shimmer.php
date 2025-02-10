@@ -310,7 +310,7 @@ function firmament_unenqueuer () {
 //    print_r($wp_scripts->queue);
 //    print "\n-->";
 //
-//}
+}
 add_action( 'wp_enqueue_scripts', 'firmament_unenqueuer', 20 );
 
 
