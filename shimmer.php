@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0.2
+Version: 1.0.3
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
@@ -384,6 +384,10 @@ function tenth_allowContact($value): string
     TouchPointWP::doCacheHeaders(TouchPointWP::CACHE_PRIVATE);
     $country = $_SERVER['HTTP_CF-IPCountry'] ?? null;
 
+    if (isset($_GET['json'])) {
+        return $value;
+    }
+
     if ($country === null) {
         $geoObj = TouchPointWP::instance()->geolocate(true, true);
         $country = $geoObj->raw->country_code ?? "";
@@ -429,3 +433,18 @@ function tenth_allowFileUploadTypes($file_types){
     return $file_types;
 }
 add_filter('upload_mimes', 'tenth_allowFileUploadTypes');
+
+
+function beExultant($template) {
+    if (isset($_GET['newtheme'])) {
+        $theme_slug = 'exultant';
+        $theme = wp_get_theme($theme_slug);
+
+        if ($theme->exists()) {
+            switch_theme($theme_slug);
+        }
+    }
+    return $template;
+}
+add_filter('template', 'beExultant');
+add_filter('stylesheet', 'beExultant');
