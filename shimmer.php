@@ -424,7 +424,7 @@ function beExultant($template) {
         $theme = wp_get_theme($theme_slug);
 
         if ($theme->exists()) {
-            switch_theme($theme_slug);
+            return $theme_slug;
         }
     }
     return $template;
