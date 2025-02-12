@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0.3
+Version: 1.0.4
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
