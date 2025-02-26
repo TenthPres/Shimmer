@@ -418,6 +418,17 @@ function tenth_allowFileUploadTypes($file_types){
 add_filter('upload_mimes', 'tenth_allowFileUploadTypes');
 
 
+add_action('admin_init', 'removeQuickDraft');
+function removeQuickDraft() {
+    remove_meta_box('dashboard_quick_press', 'dashboard', 'side');
+}
+
+
+
+//**********************
+//*****  Exultant  *****
+//**********************
+
 function beExultant($template) {
     if (isset($_GET['newtheme'])) {
         $theme_slug = 'exultant';
@@ -431,3 +442,17 @@ function beExultant($template) {
 }
 add_filter('template', 'beExultant');
 add_filter('stylesheet', 'beExultant');
+
+function exultant_override_menu($args) {
+    if (isset($_GET['newtheme']) && has_nav_menu('main')) {
+        $menu_locations = get_nav_menu_locations();
+        if (isset($menu_locations['main'])) {
+            $menu = wp_get_nav_menu_object($menu_locations['main']);
+            if ($menu) {
+                $args['menu'] = $menu->slug; // Use the correct menu
+            }
+        }
+    }
+    return $args;
+}
+add_filter('wp_nav_menu_args', 'exultant_override_menu');
