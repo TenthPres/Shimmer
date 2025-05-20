@@ -456,3 +456,48 @@ function exultant_override_menu($args) {
     return $args;
 }
 add_filter('wp_nav_menu_args', 'exultant_override_menu');
+
+
+//****************************
+//*****  Liam & Carroll  *****
+//****************************
+
+
+function tenth_unpublishGoligherWynne($query) {
+    if ( is_admin() || !$query->is_main_query() ) {
+        return;
+    }
+
+    // if user is an admin, allow stuff to continue as normal.
+    if (TouchPointWP::currentUserIsAdmin()) {
+        return;
+    }
+
+    $restrictedTax = "multi_author";
+    $restrictedTermIds = [
+        7967, // Goligher
+        7969, // Wynne
+    ];
+
+    $restrictedTerms = [];
+    foreach ($restrictedTermIds as $termId) {
+        $restrictedTerms[] = [
+            'taxonomy' => $restrictedTax,
+            'field'    => 'term_id',
+            'terms'    => $termId,
+            'operator' => 'NOT IN',
+        ];
+    }
+
+    if (empty($restrictedTerms)) {
+        return;
+    }
+
+    $taxQuery = $query->get('tax_query');
+    if (!is_array($taxQuery)) {
+        $taxQuery = [];
+    }
+
+    $query->set( 'tax_query', array_merge([ 'relation' => 'AND' ], $taxQuery, $restrictedTerms));
+}
+add_action( 'pre_get_posts', 'tenth_unpublishGoligherWynne' );
