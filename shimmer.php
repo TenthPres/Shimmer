@@ -336,23 +336,24 @@ add_filter('locale', 'tenth_setLocale');
 
 
 // Add Twitter links for those who have them, and email addresses for staff members
-function tenth_personActions($content, $person, $context): string
+function tenth_personActions($content, $person, $context, $btnClass): string
 {
-    $preContent = "";
-    $postContent = "";
+    /** @var \tp\TouchPointWP\Utilities\StringableArray $content */
+
     if ($person->ExtraValues()->TwitterHandle) {
-        $preContent .= "<a href=\"https://twitter.com/{$person->ExtraValues()->TwitterHandle}\" rel=\"noopener\" target=\"_blank\" title=\"Twitter\" class=\"fa fa-twitter btn no-ext-decoration\"></a> ";
+        $twitter = "<a href=\"https://twitter.com/{$person->ExtraValues()->TwitterHandle}\" rel=\"noopener\" target=\"_blank\" title=\"Twitter\" class=\"fa fa-twitter btn no-ext-decoration\"></a> ";
+        $content->prepend($twitter);
     }
-//    if (substr($person->user_email, -9) === 'tenth.org') {
-//        if ($context === "person-profile") {
-//            $postContent .= "&nbsp; <a href=\"mailto:{$person->user_email}\"><i class=\"las la-envelope\"></i>&nbsp;{$person->user_email}</a> ";
-//        } else {
-//            $preContent .= "<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"las la-envelope btn\"></a> ";
-//        }
-//    }
-    return $preContent . $content . $postContent;
+    if (str_ends_with($person->user_email, 'tenth.org')) {
+        if ($context === "person-profile") {
+            $content->append("<a href=\"mailto:{$person->user_email}\"><i class=\"$btnClass las la-envelope\"></i>&nbsp;{$person->user_email}</a>");
+        } else {
+            $content->prepend("<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"las la-envelope btn\"></a>");
+        }
+    }
+    return $content;
 }
-add_filter('tp_person_actions', 'tenth_personActions', 10, 3);
+add_filter('tp_person_actions', 'tenth_personActions', 10, 4);
 
 
 
