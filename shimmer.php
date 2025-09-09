@@ -459,6 +459,22 @@ function exultant_override_menu($args) {
 add_filter('wp_nav_menu_args', 'exultant_override_menu');
 
 
+// Disable some forms that aren't compatible (or necessary) with Exultant.
+if (isset($_GET['newtheme'])) {
+    $request_uri = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    $is_admin = strpos( $request_uri, '/wp-admin/' );
+    if( !$is_admin ){
+        add_filter( 'option_active_plugins', function( $plugins ){
+            $k = array_search("show-current-template/show-current-template.php", $plugins );
+            if($k !== false) {
+                unset($plugins[$k]);
+            }
+            return $plugins;
+        } );
+    }
+}
+
+
 //****************************
 //*****  Liam & Carroll  *****
 //****************************
