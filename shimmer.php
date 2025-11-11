@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0.4
+Version: 1.0.5
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
@@ -348,7 +348,7 @@ function tenth_personActions($content, $person, $context, $btnClass): string
         if ($context === "person-profile") {
             $content->append("<a href=\"mailto:{$person->user_email}\"><i class=\"$btnClass fa fa-envelope-o\"></i>&nbsp;{$person->user_email}</a>");
         } else {
-            $content->prepend("<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"fa fa-envelope btn\"></a>");
+            $content->prepend("<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"fa fa-envelope-o btn\"></a>");
         }
     }
     return $content;
