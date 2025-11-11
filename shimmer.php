@@ -346,9 +346,9 @@ function tenth_personActions($content, $person, $context, $btnClass): string
     }
     if (str_ends_with($person->user_email, 'tenth.org')) {
         if ($context === "person-profile") {
-            $content->append("<a href=\"mailto:{$person->user_email}\"><i class=\"$btnClass las la-envelope\"></i>&nbsp;{$person->user_email}</a>");
+            $content->append("<a href=\"mailto:{$person->user_email}\"><i class=\"$btnClass fa fa-envelope-o\"></i>&nbsp;{$person->user_email}</a>");
         } else {
-            $content->prepend("<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"las la-envelope btn\"></a>");
+            $content->prepend("<a href=\"mailto:{$person->user_email}\" title=\"Email\" class=\"fa fa-envelope btn\"></a>");
         }
     }
     return $content;
