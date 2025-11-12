@@ -9,26 +9,35 @@ This plugin now includes Facebook webhook functionality to detect when the Faceb
 1. Go to [Facebook Developers](https://developers.facebook.com/)
 2. Create a new app or use an existing one
 3. Add the "Webhooks" product to your app
-4. In your app settings, note down:
-   - App Secret (found in Settings > Basic)
-   - Create a Verify Token (a random string you create)
+4. In your app settings (Settings > Basic), note down your App Secret
 
 ### 2. WordPress Configuration
 
-Add the following constants to your `wp-config.php` file:
+**Method 1: Using WordPress Settings (Recommended)**
+
+1. In WordPress admin, go to **Settings > Facebook Webhook**
+2. Enter your Facebook App Secret
+3. Create and enter a custom Verify Token (any random string you create - remember it for step 3)
+4. Click "Save Settings"
+
+**Method 2: Using wp-config.php (Alternative)**
+
+For backward compatibility, you can still define these as constants in `wp-config.php`:
 
 ```php
-// Facebook App Configuration
+// Facebook App Configuration (optional - settings page is preferred)
 define('FACEBOOK_APP_SECRET', 'your_app_secret_here');
 define('FACEBOOK_WEBHOOK_VERIFY_TOKEN', 'your_verify_token_here');
 ```
+
+Note: Settings page values take precedence over constants.
 
 ### 3. Webhook Subscription Setup
 
 1. In your Facebook App dashboard, go to Webhooks
 2. Click "Add Callback URL"
 3. Enter your webhook URL: `https://your-site.com/wp-json/shimmer/v1/facebook-webhook`
-4. Enter the Verify Token (the same one you defined in wp-config.php)
+4. Enter the Verify Token (the same one you entered in WordPress settings)
 5. Click "Verify and Save"
 
 ### 4. Subscribe to Page Events
@@ -75,3 +84,4 @@ To test the webhook:
 - All webhook requests are verified using HMAC signature validation
 - The verify token prevents unauthorized webhook subscriptions
 - Both GET (verification) and POST (notifications) endpoints are properly secured
+- Credentials are stored securely in WordPress options table

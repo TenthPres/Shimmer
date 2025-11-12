@@ -72,9 +72,14 @@ echo "   - Plugin returns: 200 OK with 'EVENT_RECEIVED'\n";
 echo "   - Facebook marks the event as delivered\n\n";
 
 echo "=== Configuration Required ===\n";
-echo "In wp-config.php:\n";
-echo "define('FACEBOOK_APP_SECRET', 'your_app_secret');\n";
-echo "define('FACEBOOK_WEBHOOK_VERIFY_TOKEN', 'your_verify_token');\n\n";
+echo "Method 1 (Recommended): WordPress Admin\n";
+echo "   - Go to Settings > Facebook Webhook\n";
+echo "   - Enter your Facebook App Secret\n";
+echo "   - Enter your Webhook Verify Token\n";
+echo "   - Click 'Save Settings'\n\n";
+echo "Method 2 (Alternative): wp-config.php\n";
+echo "   define('FACEBOOK_APP_SECRET', 'your_app_secret');\n";
+echo "   define('FACEBOOK_WEBHOOK_VERIFY_TOKEN', 'your_verify_token');\n\n";
 
 echo "=== Facebook App Setup ===\n";
 echo "1. Create Facebook App at developers.facebook.com\n";

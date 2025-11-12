@@ -18,6 +18,7 @@ class FacebookWebhook {
     public static function load(): void
     {
         add_action('rest_api_init', [self::class, 'registerWebhookEndpoint']);
+        self::registerSettings();
     }
 
     /**
@@ -184,22 +185,188 @@ class FacebookWebhook {
     }
 
     /**
-     * Get the Facebook app verify token from configuration
+     * Get the Facebook app verify token from WordPress settings
+     * Falls back to constant if setting not found (for backward compatibility)
      * 
      * @return string|null
      */
     private static function getVerifyToken(): ?string
     {
-        return defined('FACEBOOK_WEBHOOK_VERIFY_TOKEN') ? FACEBOOK_WEBHOOK_VERIFY_TOKEN : null;
+        $token = get_option('shimmer_facebook_verify_token');
+        if (empty($token) && defined('FACEBOOK_WEBHOOK_VERIFY_TOKEN')) {
+            $token = FACEBOOK_WEBHOOK_VERIFY_TOKEN;
+        }
+        return !empty($token) ? $token : null;
     }
 
     /**
-     * Get the Facebook app secret from configuration
+     * Get the Facebook app secret from WordPress settings
+     * Falls back to constant if setting not found (for backward compatibility)
      * 
      * @return string|null
      */
     private static function getAppSecret(): ?string
     {
-        return defined('FACEBOOK_APP_SECRET') ? FACEBOOK_APP_SECRET : null;
+        $secret = get_option('shimmer_facebook_app_secret');
+        if (empty($secret) && defined('FACEBOOK_APP_SECRET')) {
+            $secret = FACEBOOK_APP_SECRET;
+        }
+        return !empty($secret) ? $secret : null;
+    }
+
+    /**
+     * Register settings page in WordPress admin
+     */
+    public static function registerSettings(): void
+    {
+        add_action('admin_menu', [self::class, 'addSettingsPage']);
+        add_action('admin_init', [self::class, 'registerSettingsFields']);
+    }
+
+    /**
+     * Add settings page to WordPress admin menu
+     */
+    public static function addSettingsPage(): void
+    {
+        add_options_page(
+            'Facebook Webhook Settings',
+            'Facebook Webhook',
+            'manage_options',
+            'shimmer-facebook-webhook',
+            [self::class, 'renderSettingsPage']
+        );
+    }
+
+    /**
+     * Register settings fields
+     */
+    public static function registerSettingsFields(): void
+    {
+        register_setting('shimmer_facebook_webhook', 'shimmer_facebook_app_secret', [
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => '',
+        ]);
+
+        register_setting('shimmer_facebook_webhook', 'shimmer_facebook_verify_token', [
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => '',
+        ]);
+
+        add_settings_section(
+            'shimmer_facebook_webhook_section',
+            'Facebook App Credentials',
+            [self::class, 'renderSettingsSection'],
+            'shimmer-facebook-webhook'
+        );
+
+        add_settings_field(
+            'shimmer_facebook_app_secret',
+            'Facebook App Secret',
+            [self::class, 'renderAppSecretField'],
+            'shimmer-facebook-webhook',
+            'shimmer_facebook_webhook_section'
+        );
+
+        add_settings_field(
+            'shimmer_facebook_verify_token',
+            'Webhook Verify Token',
+            [self::class, 'renderVerifyTokenField'],
+            'shimmer-facebook-webhook',
+            'shimmer_facebook_webhook_section'
+        );
+    }
+
+    /**
+     * Render settings section description
+     */
+    public static function renderSettingsSection(): void
+    {
+        echo '<p>Configure your Facebook App credentials for webhook integration. These settings are required to receive live video notifications from the /tenth Facebook page.</p>';
+    }
+
+    /**
+     * Render app secret field
+     */
+    public static function renderAppSecretField(): void
+    {
+        $value = get_option('shimmer_facebook_app_secret', '');
+        echo '<input type="password" name="shimmer_facebook_app_secret" value="' . esc_attr($value) . '" class="regular-text" />';
+        echo '<p class="description">Enter your Facebook App Secret (found in Facebook App Settings > Basic)</p>';
+    }
+
+    /**
+     * Render verify token field
+     */
+    public static function renderVerifyTokenField(): void
+    {
+        $value = get_option('shimmer_facebook_verify_token', '');
+        echo '<input type="text" name="shimmer_facebook_verify_token" value="' . esc_attr($value) . '" class="regular-text" />';
+        echo '<p class="description">Enter a custom verify token (you create this, and use the same value when configuring the webhook in Facebook)</p>';
+    }
+
+    /**
+     * Render settings page
+     */
+    public static function renderSettingsPage(): void
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // Show success message if settings were updated
+        if (isset($_GET['settings-updated'])) {
+            add_settings_error(
+                'shimmer_facebook_webhook_messages',
+                'shimmer_facebook_webhook_message',
+                'Settings Saved',
+                'updated'
+            );
+        }
+
+        settings_errors('shimmer_facebook_webhook_messages');
+
+        $webhookUrl = rest_url('shimmer/v1/facebook-webhook');
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            
+            <form action="options.php" method="post">
+                <?php
+                settings_fields('shimmer_facebook_webhook');
+                do_settings_sections('shimmer-facebook-webhook');
+                submit_button('Save Settings');
+                ?>
+            </form>
+
+            <hr>
+
+            <h2>Webhook Information</h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">Webhook URL</th>
+                    <td>
+                        <code><?php echo esc_html($webhookUrl); ?></code>
+                        <p class="description">Use this URL when configuring your Facebook webhook</p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2>Setup Instructions</h2>
+            <ol>
+                <li>Create a Facebook App at <a href="https://developers.facebook.com/" target="_blank">developers.facebook.com</a></li>
+                <li>In your Facebook App, go to Settings > Basic and copy your App Secret</li>
+                <li>Paste the App Secret in the field above</li>
+                <li>Create a custom Verify Token (any random string) and enter it above</li>
+                <li>Save these settings</li>
+                <li>In your Facebook App, add the "Webhooks" product</li>
+                <li>Click "Add Callback URL" and enter the Webhook URL shown above</li>
+                <li>Enter the same Verify Token you created in step 4</li>
+                <li>Click "Verify and Save"</li>
+                <li>Subscribe to the <strong>live_videos</strong> field for your page</li>
+            </ol>
+        </div>
+        <?php
     }
 }

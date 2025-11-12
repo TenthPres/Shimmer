@@ -61,11 +61,20 @@ When a live video starts on /tenth:
 
 ## Configuration
 
-Add to `wp-config.php`:
+**Method 1: WordPress Settings Page (Recommended)**
+1. Go to WordPress Admin > Settings > Facebook Webhook
+2. Enter your Facebook App Secret
+3. Enter your Webhook Verify Token
+4. Click "Save Settings"
+
+**Method 2: wp-config.php (Alternative)**
+Add to `wp-config.php` (for backward compatibility):
 ```php
 define('FACEBOOK_APP_SECRET', 'your_app_secret_here');
 define('FACEBOOK_WEBHOOK_VERIFY_TOKEN', 'your_verify_token_here');
 ```
+
+Note: Settings page values take precedence over constants.
 
 ## Webhook URL
 ```

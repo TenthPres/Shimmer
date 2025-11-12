@@ -38,7 +38,17 @@ class FacebookWebhookTest {
     {
         $request = new \WP_REST_Request('GET', '/shimmer/v1/facebook-webhook');
         $request->set_param('hub_mode', 'subscribe');
-        $request->set_param('hub_verify_token', FACEBOOK_WEBHOOK_VERIFY_TOKEN ?? 'test_token');
+        
+        // Get token from WordPress settings or fallback to constant
+        $token = get_option('shimmer_facebook_verify_token');
+        if (empty($token) && defined('FACEBOOK_WEBHOOK_VERIFY_TOKEN')) {
+            $token = FACEBOOK_WEBHOOK_VERIFY_TOKEN;
+        }
+        if (empty($token)) {
+            $token = 'test_token';
+        }
+        
+        $request->set_param('hub_verify_token', $token);
         $request->set_param('hub_challenge', 'test_challenge_123');
 
         $response = rest_do_request($request);
@@ -101,7 +111,15 @@ class FacebookWebhookTest {
      */
     public static function testSignatureVerification(): bool
     {
-        $appSecret = FACEBOOK_APP_SECRET ?? 'test_secret';
+        // Get app secret from WordPress settings or fallback to constant
+        $appSecret = get_option('shimmer_facebook_app_secret');
+        if (empty($appSecret) && defined('FACEBOOK_APP_SECRET')) {
+            $appSecret = FACEBOOK_APP_SECRET;
+        }
+        if (empty($appSecret)) {
+            $appSecret = 'test_secret';
+        }
+        
         $payload = json_encode(self::createMockLiveVideoPayload());
         
         $signature = 'sha256=' . hash_hmac('sha256', $payload, $appSecret);
@@ -133,12 +151,16 @@ class FacebookWebhookTest {
         
         $results['endpoint_registered'] = self::testEndpointRegistered();
         
-        if (defined('FACEBOOK_WEBHOOK_VERIFY_TOKEN')) {
+        // Check if credentials are configured (either in settings or constants)
+        $hasVerifyToken = !empty(get_option('shimmer_facebook_verify_token')) || defined('FACEBOOK_WEBHOOK_VERIFY_TOKEN');
+        $hasAppSecret = !empty(get_option('shimmer_facebook_app_secret')) || defined('FACEBOOK_APP_SECRET');
+        
+        if ($hasVerifyToken) {
             $results['verification_success'] = self::testVerificationSuccess();
             $results['verification_failure'] = self::testVerificationFailure();
         }
         
-        if (defined('FACEBOOK_APP_SECRET')) {
+        if ($hasAppSecret) {
             $results['signature_check'] = self::testSignatureVerification();
         }
         
