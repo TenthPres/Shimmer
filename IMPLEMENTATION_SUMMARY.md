@@ -62,10 +62,11 @@ When a live video starts on /tenth:
 ## Configuration
 
 **Method 1: WordPress Settings Page (Recommended)**
-1. Go to WordPress Admin > Settings > Facebook Webhook
-2. Enter your Facebook App Secret
-3. Enter your Webhook Verify Token
-4. Click "Save Settings"
+1. Go to WordPress Admin > Settings > Shimmer
+2. Find the Facebook Webhook section
+3. Enter your Facebook App Secret
+4. Enter your Webhook Verify Token
+5. Click "Save Settings"
 
 **Method 2: wp-config.php (Alternative)**
 Add to `wp-config.php` (for backward compatibility):
@@ -88,7 +89,7 @@ https://your-wordpress-site.com/wp-json/shimmer/v1/facebook-webhook
 3. Configure the callback URL with the webhook endpoint
 4. Subscribe to Page events, specifically the `live_videos` field
 5. Grant the app access to the /tenth Facebook page
-6. Customize `handleLiveVideo()` method for specific business logic
+6. Customize `handleLiveVideo($videoId, $videoTitle)` method for specific business logic
 
 ## Code Quality
 
@@ -114,7 +115,7 @@ Example script in `facebook-webhook-example.php` demonstrates the complete flow.
 
 ## Extensibility
 
-The `handleLiveVideo($videoId)` stub method can be customized to:
+The `handleLiveVideo($videoId, $videoTitle)` stub method can be customized to:
 - Create WordPress posts
 - Send email/SMS notifications
 - Update custom fields
@@ -122,4 +123,4 @@ The `handleLiveVideo($videoId)` stub method can be customized to:
 - Update digital signage
 - Integrate with other systems
 
-Current implementation just logs the video ID for verification.
+Current implementation just logs the video ID and title for verification.

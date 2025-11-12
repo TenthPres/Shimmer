@@ -52,12 +52,12 @@ echo json_encode($examplePayload, JSON_PRETTY_PRINT) . "\n\n";
 
 echo "3. WEBHOOK PROCESSING\n";
 echo "   - Plugin validates the request signature using HMAC\n";
-echo "   - Extracts the video ID from the payload\n";
-echo "   - Calls: FacebookWebhook::handleLiveVideo('987654321')\n\n";
+echo "   - Extracts the video ID and title from the payload\n";
+echo "   - Calls: FacebookWebhook::handleLiveVideo('987654321', 'Sunday Morning Service')\n\n";
 
 echo "4. CUSTOM HANDLING (in handleLiveVideo method)\n";
 echo "   Currently the stub method just logs:\n";
-echo "   'Facebook Live Video Detected - Video ID: 987654321'\n\n";
+echo "   'Facebook Live Video Detected - Video ID: 987654321, Title: Sunday Morning Service'\n\n";
 echo "   You can customize this to:\n";
 echo "   - Create a WordPress post\n";
 echo "   - Send email notifications\n";
@@ -73,7 +73,8 @@ echo "   - Facebook marks the event as delivered\n\n";
 
 echo "=== Configuration Required ===\n";
 echo "Method 1 (Recommended): WordPress Admin\n";
-echo "   - Go to Settings > Facebook Webhook\n";
+echo "   - Go to Settings > Shimmer\n";
+echo "   - Find the Facebook Webhook section\n";
 echo "   - Enter your Facebook App Secret\n";
 echo "   - Enter your Webhook Verify Token\n";
 echo "   - Click 'Save Settings'\n\n";

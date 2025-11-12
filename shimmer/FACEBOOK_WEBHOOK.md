@@ -15,10 +15,11 @@ This plugin now includes Facebook webhook functionality to detect when the Faceb
 
 **Method 1: Using WordPress Settings (Recommended)**
 
-1. In WordPress admin, go to **Settings > Facebook Webhook**
-2. Enter your Facebook App Secret
-3. Create and enter a custom Verify Token (any random string you create - remember it for step 3)
-4. Click "Save Settings"
+1. In WordPress admin, go to **Settings > Shimmer**
+2. Find the **Facebook Webhook** section
+3. Enter your Facebook App Secret
+4. Create and enter a custom Verify Token (any random string you create - remember it for step 3)
+5. Click "Save Settings"
 
 **Method 2: Using wp-config.php (Alternative)**
 
@@ -59,12 +60,12 @@ When a live video is started on the Facebook page `/tenth`:
 
 1. Facebook sends a POST request to the webhook endpoint
 2. The request is verified using the app secret
-3. The webhook payload is parsed to extract the video ID
-4. The `FacebookWebhook::handleLiveVideo($videoId)` method is called with the video ID
+3. The webhook payload is parsed to extract the video ID and title
+4. The `FacebookWebhook::handleLiveVideo($videoId, $videoTitle)` method is called with the video ID and title
 
 ## Customization
 
-The stub method `FacebookWebhook::handleLiveVideo($videoId)` currently just logs the video ID. You can customize this method in `/shimmer/FacebookWebhook.php` to:
+The stub method `FacebookWebhook::handleLiveVideo($videoId, $videoTitle)` currently just logs the video ID and title. You can customize this method in `/shimmer/FacebookWebhook.php` to:
 
 - Create a WordPress post
 - Send notifications

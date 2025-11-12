@@ -1,22 +1,33 @@
-# WordPress Settings Page - Facebook Webhook
+# WordPress Settings Page - Shimmer
 
 ## Location
-WordPress Admin → Settings → Facebook Webhook
+WordPress Admin → Settings → Shimmer
 
 ## Settings Page Layout
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Facebook Webhook Settings                                       │
+│ Shimmer Settings                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│ Configure your Facebook App credentials for webhook             │
-│ integration. These settings are required to receive live video  │
-│ notifications from the /tenth Facebook page.                    │
-│                                                                  │
 │ ┌────────────────────────────────────────────────────────────┐ │
-│ │ Facebook App Credentials                                   │ │
+│ │ Facebook Webhook                                           │ │
 │ ├────────────────────────────────────────────────────────────┤ │
+│ │                                                            │ │
+│ │ Configure your Facebook App credentials for webhook       │ │
+│ │ integration. These settings are required to receive live   │ │
+│ │ video notifications from the /tenth Facebook page.         │ │
+│ │                                                            │ │
+│ │ Webhook URL:                                               │ │
+│ │ https://your-site.com/wp-json/shimmer/v1/facebook-webhook │ │
+│ │ Use this URL when configuring your Facebook webhook       │ │
+│ │                                                            │ │
+│ │ Setup Instructions:                                        │ │
+│ │  1. Create a Facebook App at developers.facebook.com      │ │
+│ │  2. In your Facebook App, go to Settings > Basic and      │ │
+│ │     copy your App Secret                                   │ │
+│ │  3. Paste the App Secret in the field below               │ │
+│ │  ... (more instructions)                                   │ │
 │ │                                                            │ │
 │ │ Facebook App Secret                                        │ │
 │ │ [••••••••••••••••••••••••••••••]                          │ │
@@ -31,32 +42,6 @@ WordPress Admin → Settings → Facebook Webhook
 │ └────────────────────────────────────────────────────────────┘ │
 │                                                                  │
 │ [ Save Settings ]                                                │
-│                                                                  │
-├─────────────────────────────────────────────────────────────────┤
-│ Webhook Information                                              │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│ Webhook URL:                                                     │
-│ https://your-site.com/wp-json/shimmer/v1/facebook-webhook      │
-│ Use this URL when configuring your Facebook webhook             │
-│                                                                  │
-├─────────────────────────────────────────────────────────────────┤
-│ Setup Instructions                                               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  1. Create a Facebook App at developers.facebook.com            │
-│  2. In your Facebook App, go to Settings > Basic and copy       │
-│     your App Secret                                              │
-│  3. Paste the App Secret in the field above                     │
-│  4. Create a custom Verify Token (any random string) and        │
-│     enter it above                                               │
-│  5. Save these settings                                          │
-│  6. In your Facebook App, add the "Webhooks" product            │
-│  7. Click "Add Callback URL" and enter the Webhook URL          │
-│     shown above                                                  │
-│  8. Enter the same Verify Token you created in step 4           │
-│  9. Click "Verify and Save"                                      │
-│ 10. Subscribe to the live_videos field for your page            │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -89,4 +74,4 @@ WordPress Admin → Settings → Facebook Webhook
 After saving settings, the webhook will automatically:
 1. Accept verification requests from Facebook
 2. Process live video notifications
-3. Call the `handleLiveVideo()` stub method with video IDs
+3. Call the `handleLiveVideo($videoId, $videoTitle)` stub method with video IDs and titles

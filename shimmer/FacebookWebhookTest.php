@@ -135,11 +135,12 @@ class FacebookWebhookTest {
     public static function exampleHandleLiveVideo(): string
     {
         $videoId = 'test_video_123';
+        $videoTitle = 'Sunday Morning Service';
         
         // This would be called by the webhook handler when a live video is detected
-        // \tp\Shimmer\FacebookWebhook::handleLiveVideo($videoId);
+        // \tp\Shimmer\FacebookWebhook::handleLiveVideo($videoId, $videoTitle);
         
-        return "Video ID received: {$videoId}";
+        return "Video ID received: {$videoId}, Title: {$videoTitle}";
     }
 
     /**
