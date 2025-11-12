@@ -12,9 +12,13 @@ GitHub Plugin URI: https://github.com/TenthPres/Shimmer
 */
 
 use tp\Shimmer\SessionMatters;
+use tp\Shimmer\ShimmerSettings;
+use tp\Shimmer\FacebookWebhook;
 use tp\TouchPointWP\TouchPointWP;
 
 require_once __DIR__ . "/shimmer/SessionMatters.php";
+require_once __DIR__ . "/shimmer/ShimmerSettings.php";
+require_once __DIR__ . "/shimmer/FacebookWebhook.php";
 
 function tenth_involvementClasses()
 {
@@ -400,6 +404,8 @@ function tenth_formatTimeString($string, $t = null): string
 add_filter('tp_adjust_time_string', 'tenth_formatTimeString');
 
 SessionMatters::load();
+ShimmerSettings::load();
+FacebookWebhook::load();
 
 
 /**
