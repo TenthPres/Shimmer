@@ -2,6 +2,9 @@
 
 namespace tp\Shimmer;
 
+use WP_REST_Request;
+use WP_REST_Response;
+
 /**
  * FacebookWebhook handles Facebook webhook integration for live video notifications
  * 
@@ -118,38 +121,43 @@ class FacebookWebhook {
      * Facebook sends a GET request with hub.mode, hub.verify_token, and hub.challenge
      * to verify the webhook endpoint during subscription setup.
      * 
-     * @param \WP_REST_Request $request
-     * @return \WP_REST_Response
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
      */
-    public static function handleWebhookVerification(\WP_REST_Request $request): \WP_REST_Response
+    public static function handleWebhookVerification(WP_REST_Request $request): WP_REST_Response
     {
         $mode = $request->get_param('hub_mode');
-        $token = $request->get_param('hub_verify_token');
+        $token = urldecode($request->get_param('hub_verify_token'));
         $challenge = $request->get_param('hub_challenge');
 
         // Verify that the mode and token match
         if ($mode === 'subscribe' && $token === self::getVerifyToken()) {
-            // Respond with the challenge token to complete verification
-            return new \WP_REST_Response($challenge, 200, ['Content-Type' => 'text/plain']);
+            // Respond with the challenge token to complete verification.  WP_REST_Response forces JSON, so we output directly.
+            header('Content-Type: text/html');
+            echo $challenge;
+            exit;
         }
 
-        return new \WP_REST_Response('Forbidden', 403);
+        return new WP_REST_Response('Forbidden', 403);
     }
 
     /**
      * Handle incoming webhook notifications from Facebook (POST)
      * 
-     * @param \WP_REST_Request $request
-     * @return \WP_REST_Response
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
      */
-    public static function handleWebhookNotification(\WP_REST_Request $request): \WP_REST_Response
+    public static function handleWebhookNotification(WP_REST_Request $request): WP_REST_Response
     {
         // Verify the request signature
-        if (!self::verifySignature($request)) {
-            return new \WP_REST_Response('Forbidden', 403);
-        }
+//        if (!self::verifySignature($request)) { // TODO test and restore
+//            return new WP_REST_Response('Forbidden', 403);
+//        }
 
         $body = $request->get_json_params();
+
+        // write the request body to a file  TODO remove when done testing
+        file_put_contents(__DIR__ . '/facebook-webhook-log.json', json_encode($body, JSON_PRETTY_PRINT));
 
         // Process each entry in the webhook payload
         if (isset($body['entry']) && is_array($body['entry'])) {
@@ -159,16 +167,16 @@ class FacebookWebhook {
         }
 
         // Always return 200 OK to acknowledge receipt
-        return new \WP_REST_Response('EVENT_RECEIVED', 200);
+        return new WP_REST_Response('EVENT_RECEIVED', 200);
     }
 
     /**
      * Verify the signature of the webhook request
      * 
-     * @param \WP_REST_Request $request
+     * @param WP_REST_Request $request
      * @return bool
      */
-    private static function verifySignature(\WP_REST_Request $request): bool
+    private static function verifySignature(WP_REST_Request $request): bool
     {
         $signature = $request->get_header('X-Hub-Signature-256');
         
@@ -206,9 +214,10 @@ class FacebookWebhook {
             return;
         }
 
+        $ts = $entry['time'] ?? time();
         foreach ($entry['changes'] as $change) {
             if (isset($change['field']) && $change['field'] === 'live_videos') {
-                self::processLiveVideoChange($change);
+                self::processLiveVideoChange($change, $ts);
             }
         }
     }
@@ -218,7 +227,7 @@ class FacebookWebhook {
      * 
      * @param array $change
      */
-    private static function processLiveVideoChange(array $change): void
+    private static function processLiveVideoChange(array $change, $ts): void
     {
         if (!isset($change['value'])) {
             return;
@@ -226,40 +235,31 @@ class FacebookWebhook {
 
         $value = $change['value'];
 
-        // Check if this is a live video going live
-        if (isset($value['status']) && $value['status'] === 'live') {
-            $videoId = $value['id'] ?? null;
-            $videoTitle = $value['title'] ?? $value['description'] ?? '';
-            
-            if ($videoId) {
-                self::handleLiveVideo($videoId, $videoTitle);
-            }
+        if (isset($value['status'])) {
+            echo self::handleLiveVideo($value['id'], $value['status']);
         }
     }
 
     /**
      * Stub method to handle when a live video is detected
-     * 
+     *
      * This is the method that will be called with the video ID and title when
-     * the /tenth Facebook page starts a live video.
-     * 
+     * the /tenth Facebook page has an update regarding videos.
+     *
      * @param string $videoId The Facebook video ID
-     * @param string $videoTitle The video title/name (may be empty if not provided)
+     * @param string $statusStr The status string provided by Facebook
      */
-    public static function handleLiveVideo(string $videoId, string $videoTitle = ''): void
+    public static function handleLiveVideo(string $videoId, string $statusStr = ''): string
     {
-        // TODO: Implement actual handling logic
-        // This is a stub method that receives the video ID and title
-        // You can add your custom logic here to process the live video
-        
-        $logMessage = "Facebook Live Video Detected - Video ID: {$videoId}";
-        if (!empty($videoTitle)) {
-            $logMessage .= ", Title: {$videoTitle}";
-        }
-        error_log($logMessage);
-        
-        // Example: You could create a WordPress post, send notifications, etc.
-        // For now, this is just a placeholder that logs the video ID and title
+        $s = wp_remote_post('https://west.tenth.org/live/facebookHandler.php', [
+            'body' => json_encode([
+                'status' => $statusStr,
+                'fbVideoId' => $videoId
+            ]),
+            'data_format' => 'body'
+        ]);
+
+        return $s['body'];
     }
 
     /**
