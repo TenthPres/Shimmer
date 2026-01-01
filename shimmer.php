@@ -486,7 +486,7 @@ if (isset($_GET['newtheme'])) {
 //****************************
 
 
-function tenth_unpublishGoligherWynne($query) {
+function tenth_unlistGoligherWynne($query) {
     if ( is_admin() || !$query->is_main_query() ) {
         return;
     }
@@ -523,4 +523,27 @@ function tenth_unpublishGoligherWynne($query) {
 
     $query->set( 'tax_query', array_merge([ 'relation' => 'AND' ], $taxQuery, $restrictedTerms));
 }
-add_action( 'pre_get_posts', 'tenth_unpublishGoligherWynne' );
+add_action( 'pre_get_posts', 'tenth_unlistGoligherWynne');
+
+
+function tenth_unpublishGoligher() {
+    if (!is_singular()) { return; }
+
+    if (current_user_can('administrator')) { return; }
+
+    $post_id = get_queried_object_id();
+    $taxonomies = get_object_taxonomies(get_post_type($post_id));
+
+    foreach ($taxonomies as $tax) {
+        if (has_term(7967, $tax, $post_id)) {
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            nocache_headers();
+            include get_query_template('404');
+            exit;
+        }
+    }
+}
+
+add_action('template_redirect', 'tenth_unpublishGoligher');
