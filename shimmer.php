@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0.5
+Version: 1.0.6
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
@@ -528,7 +528,6 @@ add_action( 'pre_get_posts', 'tenth_unlistGoligherWynne');
 
 function tenth_unpublishGoligher() {
     if (!is_singular()) { return; }
-
     if (current_user_can('administrator')) { return; }
 
     $post_id = get_queried_object_id();
@@ -547,3 +546,43 @@ function tenth_unpublishGoligher() {
 }
 
 add_action('template_redirect', 'tenth_unpublishGoligher', 0);
+
+
+/**
+ * Exclude posts with term 7967 from post-type sitemaps.
+ */
+function tenth_removeGoligherFromSitemaps($args, $post_type) {
+    // Collect all taxonomies registered for this post type
+    $taxonomies = get_object_taxonomies($post_type);
+    if (empty($taxonomies)) {
+        return $args; // no taxonomies -- nothing to exclude
+    }
+
+    // Build a tax_query that requires the post NOT to have term 7967 in ANY taxonomy.
+    $tax_query = ['relation' => 'AND'];
+
+    foreach ($taxonomies as $tax) {
+        $tax_query[] = [
+            'taxonomy'         => $tax,
+            'field'            => 'term_id',
+            'terms'            => [7967],
+            'operator'         => 'NOT IN',
+            'include_children' => false,
+        ];
+    }
+
+    // Merge with existing tax_query if present
+    if (!empty($args['tax_query'])) {
+        // Ensure relation AND at top
+        if (!isset($args['tax_query']['relation'])) {
+            $args['tax_query']['relation'] = 'AND';
+        }
+        $args['tax_query'] = array_merge($args['tax_query'], $tax_query);
+    } else {
+        $args['tax_query'] = $tax_query;
+    }
+
+    return $args;
+}
+
+add_filter('wp_sitemaps_posts_query_args', 'tenth_removeGoligherFromSitemaps', 10, 2);
