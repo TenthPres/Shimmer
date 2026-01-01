@@ -546,4 +546,4 @@ function tenth_unpublishGoligher() {
     }
 }
 
-add_action('template_redirect', 'tenth_unpublishGoligher');
+add_action('template_redirect', 'tenth_unpublishGoligher', 0);
