@@ -4,7 +4,7 @@
 Plugin Name: Shimmer
 Plugin URI: https://github.com/TenthPres/Shimmer
 Description: A series of basic functions to fill gaps in WordPress functionality. Shims.
-Version: 1.0.6
+Version: 1.0.7
 Author: James Kurtz
 Author URI: https://github.com/jkrrv
 License: MIT
@@ -436,8 +436,15 @@ function removeQuickDraft() {
 //*****  Exultant  *****
 //**********************
 
+function testExultant(): bool
+{
+	return isset($_GET['newtheme']) || (str_contains($_SERVER['HTTP_HOST'], 'tenth.dev') && !isset($_GET['oldtheme']));
+}
+
 function beExultant($template) {
-    if (isset($_GET['newtheme'])) {
+
+	// use new theme if get->newtheme is set OR (host is tenth.dev AND get->oldtheme is not set)
+	if (testExultant()) {
         $theme_slug = 'exultant';
         $theme = wp_get_theme($theme_slug);
 
@@ -451,7 +458,7 @@ add_filter('template', 'beExultant');
 add_filter('stylesheet', 'beExultant');
 
 function exultant_override_menu($args) {
-    if (isset($_GET['newtheme']) && has_nav_menu('main')) {
+    if (testExultant() && has_nav_menu('main')) {
         $menu_locations = get_nav_menu_locations();
         if (isset($menu_locations['main'])) {
             $menu = wp_get_nav_menu_object($menu_locations['main']);
@@ -466,7 +473,7 @@ add_filter('wp_nav_menu_args', 'exultant_override_menu');
 
 
 // Disable some forms that aren't compatible (or necessary) with Exultant.
-if (isset($_GET['newtheme'])) {
+if (testExultant()) {
     $request_uri = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
     $is_admin = strpos( $request_uri, '/wp-admin/' );
     if( !$is_admin ){
