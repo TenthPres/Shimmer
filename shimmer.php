@@ -208,7 +208,7 @@ function tenth_createWorshipServices()
     if ($result instanceof WP_Error) {
         return $result;
     }
-    update_field("last_occurrence", $date_fmt . " 18:30:00", $result);
+    update_field("last_occurrence", $date_fmt . " 17:30:00", $result);
     update_field("livestream", true, $result);
     update_field("sign_language", false, $result);
     wp_set_object_terms($result, "evening", "service_type");
