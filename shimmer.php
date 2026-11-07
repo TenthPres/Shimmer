@@ -494,7 +494,14 @@ if (testExultant()) {
 
 
 function tenth_unlistGoligherWynne($query) {
-    if ( is_admin() || !$query->is_main_query() ) {
+    // Every query, not only the main one: the REST API, feeds, widgets, search, shortcodes and plugins all
+    // build their own queries, and the restriction has to hold for each of them.
+    if ( is_admin() ) {
+        return;
+    }
+
+    // Command-line jobs (imports, indexing) are not a public surface and need to see everything.
+    if ( defined('WP_CLI') && WP_CLI ) {
         return;
     }
 
@@ -528,7 +535,16 @@ function tenth_unlistGoligherWynne($query) {
         $taxQuery = [];
     }
 
-    $query->set( 'tax_query', array_merge([ 'relation' => 'AND' ], $taxQuery, $restrictedTerms));
+    // The existing conditions go in as one group, so their own relation (AND or OR) is kept intact.
+    $combined = [ 'relation' => 'AND' ];
+    if (!empty($taxQuery)) {
+        $combined[] = $taxQuery;
+    }
+    foreach ($restrictedTerms as $term) {
+        $combined[] = $term;
+    }
+
+    $query->set( 'tax_query', $combined);
 }
 add_action( 'pre_get_posts', 'tenth_unlistGoligherWynne');
 
