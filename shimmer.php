@@ -438,7 +438,8 @@ function removeQuickDraft() {
 
 function testExultant(): bool
 {
-	return isset($_GET['newtheme']) || (str_contains($_SERVER['HTTP_HOST'], 'tenth.dev') && !isset($_GET['oldtheme']));
+	// There is no host or query string on the command line (WP-CLI, cron): the old theme applies, without warnings.
+	return isset($_GET['newtheme']) || (str_contains($_SERVER['HTTP_HOST'] ?? '', 'tenth.dev') && !isset($_GET['oldtheme']));
 }
 
 function beExultant($template) {
@@ -474,7 +475,7 @@ add_filter('wp_nav_menu_args', 'exultant_override_menu');
 
 // Disable some forms that aren't compatible (or necessary) with Exultant.
 if (testExultant()) {
-    $request_uri = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    $request_uri = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH ) ?: '';
     $is_admin = strpos( $request_uri, '/wp-admin/' );
     if( !$is_admin ){
         add_filter( 'option_active_plugins', function( $plugins ){
