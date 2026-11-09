@@ -443,10 +443,10 @@ function isDevHost(): bool
 
 const TENTH_THEME_COOKIE = 'tenth_newtheme';
 
-// The admin bar toggle sends ?tenth_toggle_theme=1.  Handled as soon as this file loads, because the theme is chosen
+// The admin bar toggle sends ?tenth_toggle_theme=1 (new theme) or =0 (current theme).  Handled as soon as this file loads, because the theme is chosen
 // before WordPress's init action.
 if (isDevHost() && isset($_GET['tenth_toggle_theme'])) {
-	$tenthNewValue = (($_COOKIE[TENTH_THEME_COOKIE] ?? '') === '1') ? '0' : '1';
+	$tenthNewValue = ($_GET['tenth_toggle_theme'] === '1') ? '1' : '0';
 	if (!headers_sent()) {
 		setcookie(TENTH_THEME_COOKIE, $tenthNewValue, [
 			'expires'  => time() + YEAR_IN_SECONDS,
@@ -463,18 +463,21 @@ add_action('init', function () {
 	if ( ! isDevHost() || ! isset($_GET['tenth_toggle_theme'])) {
 		return;
 	}
-	wp_safe_redirect(remove_query_arg('tenth_toggle_theme'));
+	wp_safe_redirect(remove_query_arg(['tenth_toggle_theme', 'newtheme', 'oldtheme']));
 	exit;
 });
 
 function testExultant(): bool
 {
 	// There is no host or query string on the command line (WP-CLI, cron): the old theme applies, without warnings.
+	// In order: the URL parameter, then the admin bar's cookie (tenth.dev only), then the current theme.
 	if (isset($_GET['newtheme'])) {
 		return true;
 	}
+	if (isset($_GET['oldtheme'])) {
+		return false;
+	}
 
-	// Elsewhere, only tenth.dev can show the new theme, when it has been switched on from the admin bar.
 	return isDevHost() && ($_COOKIE[TENTH_THEME_COOKIE] ?? '') === '1';
 }
 
@@ -486,14 +489,14 @@ add_action('admin_bar_menu', function (WP_Admin_Bar $bar) {
 	$bar->add_node([
 		'id'    => 'tenth-theme-toggle',
 		'title' => $on ? 'New theme: ON' : 'New theme: off',
-		'href'  => add_query_arg('tenth_toggle_theme', '1', remove_query_arg(['tenth_toggle_theme', 'newtheme'])),
+		'href'  => add_query_arg('tenth_toggle_theme', $on ? '0' : '1', remove_query_arg(['tenth_toggle_theme', 'newtheme', 'oldtheme'])),
 		'meta'  => ['title' => $on ? 'Switch back to the current theme' : 'Try the new theme'],
 	]);
 }, 100);
 
 function beExultant($template) {
 
-	// use the new theme if ?newtheme is set, or on tenth.dev when it has been toggled on in the admin bar
+	// use the new theme per ?newtheme / ?oldtheme, else the tenth.dev cookie, else the current theme
 	if (testExultant()) {
         $theme_slug = 'firmament-child';
         $theme = wp_get_theme($theme_slug);
