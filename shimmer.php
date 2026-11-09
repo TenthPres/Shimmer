@@ -433,20 +433,69 @@ function removeQuickDraft() {
 
 
 //**********************
-//*****  Exultant  *****
+//*****  New theme (Firmament child)  *****
 //**********************
+
+function isDevHost(): bool
+{
+	return str_contains($_SERVER['HTTP_HOST'] ?? '', 'tenth.dev');
+}
+
+const TENTH_THEME_COOKIE = 'tenth_newtheme';
+
+// The admin bar toggle sends ?tenth_toggle_theme=1.  Handled as soon as this file loads, because the theme is chosen
+// before WordPress's init action.
+if (isDevHost() && isset($_GET['tenth_toggle_theme'])) {
+	$tenthNewValue = (($_COOKIE[TENTH_THEME_COOKIE] ?? '') === '1') ? '0' : '1';
+	if (!headers_sent()) {
+		setcookie(TENTH_THEME_COOKIE, $tenthNewValue, [
+			'expires'  => time() + YEAR_IN_SECONDS,
+			'path'     => '/',
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => 'Lax',
+		]);
+	}
+	$_COOKIE[TENTH_THEME_COOKIE] = $tenthNewValue;
+}
+
+add_action('init', function () {
+	if ( ! isDevHost() || ! isset($_GET['tenth_toggle_theme'])) {
+		return;
+	}
+	wp_safe_redirect(remove_query_arg('tenth_toggle_theme'));
+	exit;
+});
 
 function testExultant(): bool
 {
 	// There is no host or query string on the command line (WP-CLI, cron): the old theme applies, without warnings.
-	return isset($_GET['newtheme']) || (str_contains($_SERVER['HTTP_HOST'] ?? '', 'tenth.dev') && !isset($_GET['oldtheme']));
+	if (isset($_GET['newtheme'])) {
+		return true;
+	}
+
+	// Elsewhere, only tenth.dev can show the new theme, when it has been switched on from the admin bar.
+	return isDevHost() && ($_COOKIE[TENTH_THEME_COOKIE] ?? '') === '1';
 }
+
+add_action('admin_bar_menu', function (WP_Admin_Bar $bar) {
+	if ( ! isDevHost()) {
+		return;
+	}
+	$on = testExultant();
+	$bar->add_node([
+		'id'    => 'tenth-theme-toggle',
+		'title' => $on ? 'New theme: ON' : 'New theme: off',
+		'href'  => add_query_arg('tenth_toggle_theme', '1', remove_query_arg(['tenth_toggle_theme', 'newtheme'])),
+		'meta'  => ['title' => $on ? 'Switch back to the current theme' : 'Try the new theme'],
+	]);
+}, 100);
 
 function beExultant($template) {
 
-	// use new theme if get->newtheme is set OR (host is tenth.dev AND get->oldtheme is not set)
+	// use the new theme if ?newtheme is set, or on tenth.dev when it has been toggled on in the admin bar
 	if (testExultant()) {
-        $theme_slug = 'exultant';
+        $theme_slug = 'firmament-child';
         $theme = wp_get_theme($theme_slug);
 
         if ($theme->exists()) {
@@ -487,6 +536,96 @@ if (testExultant()) {
         } );
     }
 }
+
+
+//*********************
+//*****  Andy Cheely  *****
+//*********************
+
+/**
+ * Authors whose content and author page are visible only to logged-in users.  Slugs of terms in the multi_author taxonomy.
+ */
+function tenth_membersOnlyAuthorTermIds(): array {
+    static $ids = null;
+    if ($ids === null) {
+        $ids = [];
+        foreach (['andy-cheely'] as $slug) {
+            $term = get_term_by('slug', $slug, 'multi_author');
+            if ($term && !is_wp_error($term)) {
+                $ids[] = (int)$term->term_id;
+            }
+        }
+    }
+    return $ids;
+}
+
+function tenth_hideCheelyFromPublic($query) {
+    if (is_admin() || is_user_logged_in() || (defined('WP_CLI') && WP_CLI)) {
+        return;
+    }
+    $ids = tenth_membersOnlyAuthorTermIds();
+    if (empty($ids)) {
+        return;
+    }
+
+    $taxQuery = $query->get('tax_query');
+    $combined = ['relation' => 'AND'];
+    if (is_array($taxQuery) && !empty($taxQuery)) {
+        $combined[] = $taxQuery;
+    }
+    $combined[] = [
+        'taxonomy' => 'multi_author',
+        'field'    => 'term_id',
+        'terms'    => $ids,
+        'operator' => 'NOT IN',
+    ];
+    $query->set('tax_query', $combined);
+}
+add_action('pre_get_posts', 'tenth_hideCheelyFromPublic');
+
+// His posts and his author page are 404s to the public.
+function tenth_hideCheelyPages() {
+    if (is_user_logged_in()) { return; }
+    $ids = tenth_membersOnlyAuthorTermIds();
+    if (empty($ids)) { return; }
+
+    $hide = false;
+    if (is_tax('multi_author', $ids)) {
+        $hide = true;
+    } elseif (is_singular()) {
+        $postId = get_queried_object_id();
+        $hide = $postId && has_term($ids, 'multi_author', $postId);
+    }
+
+    if ($hide) {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        nocache_headers();
+        include get_query_template('404');
+        exit;
+    }
+}
+add_action('template_redirect', 'tenth_hideCheelyPages', 0);
+
+// Search engines only see the public site, so he is always left out of the sitemaps.
+add_filter('wp_sitemaps_posts_query_args', function ($args) {
+    $ids = tenth_membersOnlyAuthorTermIds();
+    if ($ids) {
+        $args['tax_query'] = array_merge(
+            ['relation' => 'AND'],
+            empty($args['tax_query']) ? [] : [$args['tax_query']],
+            [['taxonomy' => 'multi_author', 'field' => 'term_id', 'terms' => $ids, 'operator' => 'NOT IN']]
+        );
+    }
+    return $args;
+});
+add_filter('wp_sitemaps_taxonomies_query_args', function ($args, $taxonomy) {
+    if ($taxonomy === 'multi_author') {
+        $args['exclude'] = array_merge((array)($args['exclude'] ?? []), tenth_membersOnlyAuthorTermIds());
+    }
+    return $args;
+}, 10, 2);
 
 
 //****************************
